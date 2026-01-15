@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แอพจองทัวร์ท่องเที่ยว (HTA Demo)</title>
+    <style>
+        /* CSS Styles: ตกแต่งหน้าตาให้เหมือนแอปมือถือ */
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .app-container {
+            width: 375px;
+            height: 750px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background-color: #0066cc;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .content {
+            padding: 20px;
+            flex: 1;
+        }
+        .screen {
+            display: none; /* ซ่อนทุกหน้าก่อน */
+            animation: fadeIn 0.3s;
+        }
+        .screen.active {
+            display: block; /* แสดงเฉพาะหน้าที่ Active */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Form Elements */
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button.secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        button.danger {
+            background-color: #ff4d4d;
+        }
+        .tour-card {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .step-indicator {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .payment-option {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header" id="header-title">Travel App</div>
+    
+    <div class="content">
+        
+        <div id="screen-auth" class="screen active">
+            <h2 style="text-align:center;">ยินดีต้อนรับ</h2>
+            <div id="login-form">
+                <h3>เข้าสู่ระบบ (Task 2)</h3>
+                <input type="email" placeholder="2.1 อีเมล" value="user@example.com">
+                <input type="password" placeholder="2.2 รหัสผ่าน" value="123456">
+                <div style="text-align:right; font-size:12px; color:blue; margin-bottom:10px; cursor:pointer;" onclick="alert('จำลอง Task 2.3: ลืมรหัสผ่าน -> กรอกอีเมล -> ตั้งรหัสใหม่')">2.3 ลืมรหัสผ่าน?</div>
+                <button onclick="goToScreen('screen-search')">2.4 ยืนยันเข้าสู่ระบบ</button>
+                <button class="secondary" onclick="toggleAuth()">สมัครสมาชิกใหม่</button>
+            </div>
+
+            <div id="register-form" style="display:none;">
+                <h3>สมัครสมาชิก (Task 1)</h3>
+                <label><input type="checkbox"> 1.1 ยืนยันความเป็นส่วนตัว</label>
+                <input type="email" placeholder="1.2 อีเมล">
+                <input type="password" placeholder="1.3 รหัสผ่าน">
+                <button onclick="alert('สมัครสมาชิกสำเร็จ!'); toggleAuth()">1.4 ยืนยันการสมัคร</button>
+                <button class="secondary" onclick="toggleAuth()">กลับไปหน้าเข้าสู่ระบบ</button>
+            </div>
+        </div>
+
+        <div id="screen-search" class="screen">
+            <div class="step-indicator">Step 1: ค้นหา</div>
+            <h3>ค้นหาทัวร์ (Task 3)</h3>
+            <label>3.1 จุดหมายปลายทาง</label>
+            <select id="destination">
+                <option value="Japan">ญี่ปุ่น (Japan)</option>
+                <option value="Europe">ยุโรป (Europe)</option>
+                <option value="Thailand">ไทย (Thailand)</option>
+            </select>
+            
+            <label>3.2 วันที่เดินทาง</label>
+            <input type="date">
+            
+            <label>3.3 จำนวนผู้เดินทาง</label>
+            <input type="number" min="1" value="1">
+            
+            <label>3.4 กรองประเภททัวร์</label>
+            <select>
+                <option>ทั้งหมด</option>
+                <option>ผจญภัย</option>
+                <option>ครอบครัว</option>
+            </select>
+            
+            <button onclick="goToScreen('screen-select-tour')">ค้นหาทัวร์</button>
+        </div>
+
+        <div id="screen-select-tour" class="screen">
+            <div class="step-indicator">Step 2: เลือกแพ็คเกจ</div>
+            <h3>รายการทัวร์ที่พบ (Task 4)</h3>
+            
+            <div class="tour-card">
+                <h4>ทัวร์โตเกียว 5 วัน 4 คืน</h4>
+                <p>฿25,900 / ท่าน</p>
+                <button class="secondary" onclick="alert('แสดงรายละเอียดโปรแกรมทัวร์ (4.1), สิ่งที่รวม (4.2), รีวิว (4.3)')">ดูรายละเอียด</button>
+                <button onclick="selectTour('ทัวร์โตเกียว 5 วัน 4 คืน', 25900)">4.4 เพิ่มทัวร์ลงตะกร้า</button>
+            </div>
+             <div class="tour-card">
+                <h4>ทัวร์ฮอกไกโด หิมะฟินๆ</h4>
+                <p>฿32,900 / ท่าน</p>
+                <button class="secondary" onclick="alert('แสดงรายละเอียดโปรแกรมทัวร์...')">ดูรายละเอียด</button>
+                <button onclick="selectTour('ทัวร์ฮอกไกโด หิมะฟินๆ', 32900)">4.4 เพิ่มทัวร์ลงตะกร้า</button>
+            </div>
+            
+            <button class="secondary" onclick="goToScreen('screen-search')">กลับ</button>
+        </div>
+
+        <div id="screen-info" class="screen">
+            <div class="step-indicator">Step 3: ข้อมูล & บริการเสริม</div>
+            
+            <h3>5. เลือกบริการเสริม</h3>
+            <label><input type="checkbox" id="addon-insurance" value="500"> 5.1 ประกันการเดินทาง (+500฿)</label>
+            <label><input type="checkbox" id="addon-seat" value="1000"> 5.2 เลือกที่นั่งเครื่องบิน (+1,000฿)</label>
+            <label><input type="checkbox" id="addon-room" value="2000"> 5.3 ห้องพักแบบพิเศษ (+2,000฿)</label>
+            
+            <hr>
+            
+            <h3>6. กรอกข้อมูลผู้เดินทาง</h3>
+            <input type="text" placeholder="6.1 ชื่อ-นามสกุล">
+            <input type="text" placeholder="6.2 เลขที่หนังสือเดินทาง">
+            <input type="tel" placeholder="6.3 ข้อมูลติดต่อ (เบอร์โทร)">
+            <input type="text" placeholder="6.4 ข้อมูลฉุกเฉิน">
+            
+            <button onclick="goToScreen('screen-payment')">ดำเนินการต่อ</button>
+        </div>
+
+        <div id="screen-payment" class="screen">
+            <div class="step-indicator">Step 4: ชำระเงิน</div>
+            <h3>7. เลือกวิธีชำระเงิน</h3>
+            <p>ยอดรวม: <span id="total-price" style="font-weight:bold; color:blue;">0</span> บาท</p>
+
+            <div class="payment-option">
+                <label><input type="radio" name="pay" onchange="showPaymentDetail('card')"> 7.1 บัตรเครดิต</label>
+                <div id="pay-card" style="display:none; margin-top:10px;">
+                    <input type="text" placeholder="7.1.1 หมายเลขบัตร">
+                    <input type="text" placeholder="7.1.2 วันหมดอายุ">
+                    <input type="text" placeholder="7.1.3 รหัส CVV">
+                </div>
+            </div>
+
+            <div class="payment-option">
+                <label><input type="radio" name="pay" onchange="showPaymentDetail('transfer')"> 7.2 โอนเงิน</label>
+                <div id="pay-transfer" style="display:none; margin-top:10px;">
+                    <select><option>7.2.1 เลือกธนาคาร</option></select>
+                    <button class="secondary">7.2.2 อัพโหลดสลิป</button>
+                </div>
+            </div>
+
+            <div class="payment-option">
+                <label><input type="radio" name="pay" onchange="showPaymentDetail('install')"> 7.3 ผ่อนชำระ</label>
+                <div id="pay-install" style="display:none; margin-top:10px;">
+                    <select><option>7.3.1 เลือกระยะเวลา (3/6/10 เดือน)</option></select>
+                </div>
+            </div>
+
+            <button onclick="goToScreen('screen-confirm')">ตรวจสอบการจอง</button>
+        </div>
+
+        <div id="screen-confirm" class="screen">
+             <div class="step-indicator">Step 5: ยืนยัน</div>
+             <h3>8. ยืนยันและชำระเงิน</h3>
+             
+             <div style="background:#f9f9f9; padding:10px; border-radius:8px;">
+                 <h4>8.1 รายละเอียดการจอง</h4>
+                 <p>แพ็คเกจ: <span id="conf-package"></span></p>
+                 <p>บริการเสริม: <span id="conf-addons"></span></p>
+                 <p>ยอดสุทธิ: <span id="conf-total"></span> บาท</p>
+             </div>
+             
+             <br>
+             <input type="text" placeholder="8.2 ใส่โค้ดส่วนลด (ถ้ามี)">
+             
+             <button onclick="confirmBooking()">8.3 ยืนยันการชำระเงิน</button>
+             <button class="secondary" onclick="goToScreen('screen-payment')">แก้ไข</button>
+        </div>
+
+        <div id="screen-status" class="screen">
+            <h2 style="color:green; text-align:center;">8.4 จองสำเร็จ!</h2>
+            <p style="text-align:center;">ขอบคุณที่ใช้บริการ</p>
+            
+            <div class="tour-card" style="border-color:green;">
+                <h3>9. สถานะการจอง: ยืนยันแล้ว</h3>
+                <button class="secondary" onclick="alert('9.2 ดาวน์โหลดเอกสาร PDF...')">9.2 ดาวน์โหลดเอกสาร</button>
+                <button class="secondary" onclick="alert('9.3 เปิดหน้าต่างให้คะแนน...')">9.3 ให้คะแนน</button>
+                <button class="danger" onclick="cancelBooking()">9.1 ยกเลิกการจอง</button>
+            </div>
+            
+            <button onclick="location.reload()">กลับหน้าแรก</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // ตัวแปรเก็บข้อมูลชั่วคราว
+    let selectedTour = { name: "", price: 0 };
+    let currentAddons = 0;
+
+    // ฟังก์ชันเปลี่ยนหน้าจอ (Navigation)
+    function goToScreen(screenId) {
+        // ซ่อนทุกหน้า
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        // แสดงหน้าที่ต้องการ
+        document.getElementById(screenId).classList.add('active');
+        
+        // อัปเดต Header ตามหน้า
+        if(screenId === 'screen-status') {
+            document.getElementById('header-title').innerText = 'My Booking';
+        }
+    }
+
+    // Toggle Login/Register
+    function toggleAuth() {
+        const login = document.getElementById('login-form');
+        const reg = document.getElementById('register-form');
+        if (login.style.display === 'none') {
+            login.style.display = 'block';
+            reg.style.display = 'none';
+        } else {
+            login.style.display = 'none';
+            reg.style.display = 'block';
+        }
+    }
+
+    // เลือกทัวร์ (Task 4)
+    function selectTour(name, price) {
+        selectedTour.name = name;
+        selectedTour.price = price;
+        goToScreen('screen-info');
+    }
+
+    // แสดงรายละเอียดการจ่ายเงิน (Task 7 logic)
+    function showPaymentDetail(type) {
+        document.getElementById('pay-card').style.display = 'none';
+        document.getElementById('pay-transfer').style.display = 'none';
+        document.getElementById('pay-install').style.display = 'none';
+
+        if(type === 'card') document.getElementById('pay-card').style.display = 'block';
+        if(type === 'transfer') document.getElementById('pay-transfer').style.display = 'block';
+        if(type === 'install') document.getElementById('pay-install').style.display = 'block';
+        
+        // คำนวณราคา
+        calculateTotal();
+    }
+
+    function calculateTotal() {
+        let addonPrice = 0;
+        let addonsText = [];
+        
+        if(document.getElementById('addon-insurance').checked) { addonPrice += 500; addonsText.push("ประกัน"); }
+        if(document.getElementById('addon-seat').checked) { addonPrice += 1000; addonsText.push("ที่นั่ง"); }
+        if(document.getElementById('addon-room').checked) { addonPrice += 2000; addonsText.push("ห้องพิเศษ"); }
+        
+        let total = selectedTour.price + addonPrice;
+        
+        // Update UI
+        document.getElementById('total-price').innerText = total.toLocaleString();
+        document.getElementById('conf-package').innerText = selectedTour.name;
+        document.getElementById('conf-addons').innerText = addonsText.length > 0 ? addonsText.join(", ") : "-";
+        document.getElementById('conf-total').innerText = total.toLocaleString();
+    }
+
+    // Task 8
+    function confirmBooking() {
+        alert('กำลังดำเนินการชำระเงิน...');
+        setTimeout(() => {
+            goToScreen('screen-status');
+        }, 1000);
+    }
+
+    // Task 9.1
+    function cancelBooking() {
+        let reason = prompt("9.1.1 ระบุเหตุผลการยกเลิก:");
+        if (reason) {
+            alert("9.1.2 ยกเลิกการจองสำเร็จ");
+            location.reload();
+        }
+    }
+    
+    // Auto calc on addon change
+    document.querySelectorAll('input[type=checkbox]').forEach(el => {
+        el.addEventListener('change', calculateTotal);
+    });
+
+</script>
+
+</body>
+</html>
